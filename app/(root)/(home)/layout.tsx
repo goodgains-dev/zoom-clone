@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
   title: 'GoodGains Work',
-  description: 'A workspace for your team, powered by Stream Chat and Clerk.',
+  description: 'A workspace for your team, powered by Blockchain.',
 };
 
 const RootLayout = ({ children }: Readonly<{children: ReactNode}>) => {
