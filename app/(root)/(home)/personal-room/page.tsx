@@ -12,20 +12,15 @@ import {
   Thread,
   Window
 } from 'stream-chat-react';
-import { useRouter } from 'next/navigation';
 import Loader from '@/components/Loader'; // Ensure this path is correct
 import { tokenProvider } from '@/actions/stream.actions';
-import { Button } from '@/components/ui/button'; // Ensure this path is correct
-import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 
 const PersonalRoom = () => {
-  const router = useRouter();
   const { user, isLoaded } = useUser();
   const [client, setClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!user || !isLoaded) return;
