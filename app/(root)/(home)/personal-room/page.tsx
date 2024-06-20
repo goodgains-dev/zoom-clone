@@ -105,4 +105,3 @@ const PersonalRoom = () => {
 };
 
 export default PersonalRoom;
-export default PersonalRoom;
