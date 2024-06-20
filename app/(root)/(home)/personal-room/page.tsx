@@ -1,86 +1,108 @@
-"use client";
+'use client';
 
-import { useUser } from "@clerk/nextjs";
-import { useStreamVideoClient } from "@stream-io/video-react-sdk";
-import { useRouter } from "next/navigation";
-
-import { useGetCallById } from "@/hooks/useGetCallById";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-
-const Table = ({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) => {
-  return (
-    <div className="flex flex-col items-start gap-2 xl:flex-row">
-      <h1 className="text-base font-medium text-sky-1 lg:text-xl xl:min-w-32">
-        {title}:
-      </h1>
-      <h1 className="truncate text-sm font-bold max-sm:max-w-[320px] lg:text-xl">
-        {description}
-      </h1>
-    </div>
-  );
-};
+import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { StreamChat } from 'stream-chat';
+import {
+  Chat,
+  Channel as StreamChannelComponent,
+  ChannelHeader,
+  MessageList,
+  MessageInput,
+  Thread,
+  Window
+} from 'stream-chat-react';
+import { useRouter } from 'next/navigation';
+import Loader from '@/components/Loader'; // Ensure this path is correct
+import { tokenProvider } from '@/actions/stream.actions';
+import { Button } from '@/components/ui/button'; // Ensure this path is correct
+import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 
 const PersonalRoom = () => {
   const router = useRouter();
-  const { user } = useUser();
-  const client = useStreamVideoClient();
+  const { user, isLoaded } = useUser();
+  const [client, setClient] = useState(null);
+  const [channel, setChannel] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { toast } = useToast();
 
-  const meetingId = user?.id;
+  useEffect(() => {
+    if (!user || !isLoaded) return;
 
-  const { call } = useGetCallById(meetingId!);
+    const initChat = async () => {
+      try {
+        const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY);
+        const token = await tokenProvider(user.id);
+        
+        await streamClient.connectUser(
+          {
+            id: user.id,
+            name: user.username || user.id,
+            image: user.imageUrl,
+          },
+          token
+        );
 
-  const startRoom = async () => {
-    if (!client || !user) return;
+        const filters = { members: { $in: [user.id] } };
+        const sort = [{ last_message_at: -1 }];
+        const channels = await streamClient.queryChannels(filters, sort);
+        console.log('Fetched channels:', channels);
 
-    const newCall = client.call("default", meetingId!);
+        if (channels.length > 0) {
+          setChannel(channels[0]);
+        } else {
+          // Create a default channel if none are found
+          const defaultChannel = streamClient.channel('messaging', `default-${user.id}`, {
+            name: `${user.username}'s Default Channel`,
+            members: [user.id],
+          });
+          await defaultChannel.create();
+          setChannel(defaultChannel);
+        }
 
-    if (!call) {
-      await newCall.getOrCreate({
-        data: {
-          starts_at: new Date().toISOString(),
-        },
-      });
-    }
+        setClient(streamClient);
+      } catch (err) {
+        console.error('Error initializing chat:', err);
+        setError('Failed to initialize chat');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    router.push(`/meeting/${meetingId}?personal=true`);
-  };
+    initChat();
 
-  const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${meetingId}?personal=true`;
+    return () => {
+      if (client) {
+        client.disconnectUser();
+      }
+    };
+  }, [user, isLoaded]);
+
+  if (isLoading) return <Loader />;
+  if (error) return <p>{error}</p>;
+  if (!channel) return <p>Channel Not Found. Creating a default channel...</p>;
 
   return (
-    <section className="flex size-full flex-col gap-10 text-white">
-      <h1 className="text-xl font-bold lg:text-3xl">Personal Meeting Room</h1>
-      <div className="flex w-full flex-col gap-8 xl:max-w-[900px]">
-        <Table title="Topic" description={`${user?.username}'s Meeting Room`} />
-        <Table title="Meeting ID" description={meetingId!} />
-        <Table title="Invite Link" description={meetingLink} />
-      </div>
-      <div className="flex gap-5">
-        <Button className="bg-blue-1" onClick={startRoom}>
-          Start Meeting
-        </Button>
-        <Button
-          className="bg-dark-3"
-          onClick={() => {
-            navigator.clipboard.writeText(meetingLink);
-            toast({
-              title: "Link Copied",
-            });
-          }}
-        >
-          Copy Invitation
-        </Button>
+    <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <h1 className="text-3xl font-bold mb-6">Chat Room</h1>
+      <div className="flex flex-col w-full max-w-5xl gap-8 p-4 bg-gray-800 rounded-lg">
+        <Chat client={client} theme="team dark">
+          <StreamChannelComponent channel={channel}>
+            <Window>
+              <ChannelHeader />
+              <MessageList />
+              <div className="mt-4">
+                <MessageInput />
+              </div>
+              <Thread />
+            </Window>
+          </StreamChannelComponent>
+        </Chat>
       </div>
     </section>
   );
 };
 
+export default PersonalRoom;
 export default PersonalRoom;
