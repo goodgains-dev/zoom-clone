@@ -10,18 +10,22 @@ import {
   MessageList,
   MessageInput,
   Thread,
-  Window,
-  ChannelList
+  Window
 } from 'stream-chat-react';
+import { useRouter } from 'next/navigation';
 import Loader from '@/components/Loader'; // Ensure this path is correct
 import { tokenProvider } from '@/actions/stream.actions';
+import { Button } from '@/components/ui/button'; // Ensure this path is correct
+import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 
 const PersonalRoom = () => {
+  const router = useRouter();
   const { user, isLoaded } = useUser();
   const [client, setClient] = useState(null);
   const [channel, setChannel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user || !isLoaded) return;
@@ -30,7 +34,7 @@ const PersonalRoom = () => {
       try {
         const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY);
         const token = await tokenProvider(user.id);
-
+        
         await streamClient.connectUser(
           {
             id: user.id,
@@ -80,40 +84,15 @@ const PersonalRoom = () => {
   if (!channel) return <p>Channel Not Found. Creating a default channel...</p>;
 
   return (
-    <section className="flex h-screen">
-      {/* Sidebar */}
-      <div className="flex flex-col w-1/4 bg-gray-800 text-white">
-        <div className="p-4 border-b border-gray-700">
-          <h1 className="text-xl font-bold">Channels</h1>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <ChannelList 
-            client={client}
-            filters={{ members: { $in: [user.id] } }}
-            sort={{ last_message_at: -1 }}
-            options={{ subscribe: true }}
-            Preview={(props) => (
-              <div
-                onClick={() => setChannel(props.channel)}
-                className={`p-2 cursor-pointer hover:bg-gray-700 rounded ${
-                  props.channel?.id === channel?.id ? 'bg-blue-600' : 'bg-gray-800'
-                }`}
-              >
-                {props.channel?.data?.name || props.channel?.id}
-              </div>
-            )}
-          />
-        </div>
-      </div>
-
-      {/* Chat Window */}
-      <div className="flex flex-col w-3/4 bg-gray-900 text-white">
+    <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <h1 className="text-3xl font-bold mb-6">Chat Room</h1>
+      <div className="flex flex-col w-full max-w-5xl gap-8 p-4 bg-gray-800 rounded-lg">
         <Chat client={client} theme="team dark">
           <StreamChannelComponent channel={channel}>
             <Window>
               <ChannelHeader />
               <MessageList />
-              <div className="p-4 bg-gray-800">
+              <div className="mt-4">
                 <MessageInput />
               </div>
               <Thread />
