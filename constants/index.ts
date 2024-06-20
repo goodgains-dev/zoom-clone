@@ -23,7 +23,7 @@ export const sidebarLinks = [
   {
     imgURL: '/icons/add-personal.svg',
     route: '/personal-room',
-    label: 'Personal Room',
+    label: 'Messanging',
   },
 ];
 
