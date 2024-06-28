@@ -144,6 +144,7 @@ const PersonalRoom: React.FC = () => {
   const [newChannelName, setNewChannelName] = useState('');
   const { toast } = useToast();
   const [inviteUserId, setInviteUserId] = useState('');
+  const [inviteLink, setInviteLink] = useState('');
   const [members, setMembers] = useState<any[]>([]);
   const [isCallActive, setIsCallActive] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
@@ -163,7 +164,7 @@ const PersonalRoom: React.FC = () => {
           {
             id: user.id,
             name: user.username || user.id,
-            image: user.setProfileImage,
+            image: user.profileImageUrl,
           },
           token
         );
@@ -203,6 +204,7 @@ const PersonalRoom: React.FC = () => {
           user: {
             id: user.id,
             name: user.username || user.id,
+            image: user.profileImageUrl,
           },
           token,
         });
@@ -251,6 +253,25 @@ const PersonalRoom: React.FC = () => {
     }
   };
 
+  const handleJoinViaInviteLink = async () => {
+    if (!inviteLink || !client) return;
+
+    try {
+      const urlParams = new URLSearchParams(new URL(inviteLink).search);
+      const channelId = urlParams.get('channelId');
+      if (channelId) {
+        const channel = client.channel('messaging', channelId);
+        await channel.watch();
+        setActiveChannel(channel);
+        setChannels([...channels, channel]);
+        toast({ title: 'Success', description: 'Joined channel successfully' });
+      }
+    } catch (err) {
+      console.error('Error joining channel via invite link:', err);
+      toast({ title: 'Error', description: 'Failed to join channel via invite link' });
+    }
+  };
+
   const handleCreateChannel = async () => {
     if (!client || !newChannelName) return;
 
@@ -296,7 +317,7 @@ const PersonalRoom: React.FC = () => {
       call.join();
 
       // Fetch participants and set them in state
-      const Participants = participants;
+      const Participants = call.participants;
       setParticipants(Participants);
     } catch (error) {
       console.error('Error starting call:', error);
@@ -342,26 +363,6 @@ const PersonalRoom: React.FC = () => {
       </div>
     );
   };
-
-  const joinChannelFromURL = async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const channelId = urlParams.get('channelId');
-    if (channelId && client) {
-      try {
-        const channel = client.channel('messaging', channelId);
-        await channel.watch();
-        setActiveChannel(channel);
-        setChannels([...channels, channel]);
-      } catch (err) {
-        console.error('Error joining channel from URL:', err);
-        toast({ title: 'Error', description: 'Failed to join channel from URL' });
-      }
-    }
-  };
-
-  useEffect(() => {
-    joinChannelFromURL();
-  }, [client]);
 
   if (isLoading) return <Loader />;
   if (error) return <p>{error}</p>;
@@ -436,6 +437,16 @@ const PersonalRoom: React.FC = () => {
             <Button onClick={handleInvite}>Invite</Button>
             <Button onClick={handleInvite}>Copy Invite Link</Button>
           </div>
+          <div className="mt-4 flex items-center gap-2">
+            <input
+              type="text"
+              value={inviteLink}
+              onChange={(e) => setInviteLink(e.target.value)}
+              placeholder="Paste invite link here"
+              className="p-2 border rounded"
+            />
+            <Button onClick={handleJoinViaInviteLink}>Join via Invite Link</Button>
+          </div>
           <motion.div
             className="mt-4"
             initial={{ scale: 0 }}
@@ -444,7 +455,7 @@ const PersonalRoom: React.FC = () => {
           >
             <Button onClick={handleStartCall}>Start Call</Button>
             {isCallActive && participants.map(participant => (
-              <ParticipantView key={participant.userId} participant={participant} />
+              <ParticipantView key={participant.user_id} participant={participant} />
             ))}
           </motion.div>
         </motion.div>
@@ -491,7 +502,5 @@ const PersonalRoom: React.FC = () => {
     </Container>
   );
 };
-
-export default PersonalRoom;
 
 export default PersonalRoom;
