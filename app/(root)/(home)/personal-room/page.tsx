@@ -297,7 +297,6 @@ const PersonalRoom: React.FC = () => {
   };
 
   const customMessageRenderer = (messageProps: any) => {
-    const { message } = messageProps;
     return <MessageSimple {...messageProps} />;
   };
 
