@@ -14,8 +14,7 @@ import {
   Window,
   MessageSimple
 } from 'stream-chat-react';
-import { StreamVideoClient, ParticipantView } from '@stream-io/video-react-sdk';
-import { useRouter } from 'next/navigation';
+import { StreamVideoClient, useCallStateHooks, CallingState, StreamTheme, ParticipantView } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
@@ -127,7 +126,6 @@ const ChannelSettings = ({ channel, roles, user, onChannelUpdated, onDeleteChann
 };
 
 const PersonalRoom = () => {
-  const router = useRouter();
   const { user, isLoaded } = useUser();
   const [client, setClient] = useState(null);
   const [videoClient, setVideoClient] = useState(null);
