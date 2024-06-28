@@ -164,7 +164,7 @@ const PersonalRoom: React.FC = () => {
           {
             id: user.id,
             name: user.username || user.id,
-            image: user.profileImageUrl,
+            image: user.setProfileImage,
           },
           token
         );
@@ -204,7 +204,6 @@ const PersonalRoom: React.FC = () => {
           user: {
             id: user.id,
             name: user.username || user.id,
-            image: user.profileImageUrl,
           },
           token,
         });
@@ -317,7 +316,7 @@ const PersonalRoom: React.FC = () => {
       call.join();
 
       // Fetch participants and set them in state
-      const Participants = call.participants;
+      const Participants = participants;
       setParticipants(Participants);
     } catch (error) {
       console.error('Error starting call:', error);
@@ -455,7 +454,7 @@ const PersonalRoom: React.FC = () => {
           >
             <Button onClick={handleStartCall}>Start Call</Button>
             {isCallActive && participants.map(participant => (
-              <ParticipantView key={participant.user_id} participant={participant} />
+              <ParticipantView key={participant.userId} participant={participant} />
             ))}
           </motion.div>
         </motion.div>
