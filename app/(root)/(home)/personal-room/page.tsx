@@ -63,7 +63,7 @@ interface ChannelSettingsProps {
   onDeleteChannel: () => void;
 }
 
-const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, onChannelUpdated, onDeleteChannel }) => {
+const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, user, onChannelUpdated, onDeleteChannel }) => {
   const [newChannelName, setNewChannelName] = useState('');
   const { toast } = useToast();
   const [memberRoles, setMemberRoles] = useState(roles);
@@ -87,7 +87,9 @@ const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, onCha
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
-      await channel.updateMember(userId, { role: newRole });
+      await channel.updatePartial({
+        set: { [`members.${userId}.role`]: newRole },
+      });
       setMemberRoles({ ...memberRoles, [userId]: newRole });
       toast({ title: 'Success', description: 'User role updated successfully' });
     } catch (error) {
