@@ -16,7 +16,6 @@ import {
 } from 'stream-chat-react';
 import { StreamVideoClient, ParticipantView, StreamVideoParticipant } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
-import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
 import { tokenProvider } from '@/actions/stream.actions'; // Ensure this path is correct
 import { Button } from '@/components/ui/button'; // Ensure this path is correct
@@ -148,15 +147,10 @@ const PersonalRoom: React.FC = () => {
   const [inviteUserId, setInviteUserId] = useState('');
   const [members, setMembers] = useState<any[]>([]);
   const [isCallActive, setIsCallActive] = useState(false);
-  const [playingAudioUrl, setPlayingAudioUrl] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [roles, setRoles] = useState<Record<string, string>>({}); // Store user roles
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Manage settings modal state
   const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]); // Store call participants
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const { startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } = useReactMediaRecorder({ audio: true });
 
   useEffect(() => {
     if (!user || !isLoaded) return;
@@ -213,9 +207,7 @@ const PersonalRoom: React.FC = () => {
       }
     };
 
-    if (typeof window !== 'undefined') {
-      initChat();
-    }
+    initChat();
 
     return () => {
       if (client) {
@@ -304,67 +296,8 @@ const PersonalRoom: React.FC = () => {
     }
   };
 
-  const handleSendVoiceMessage = async () => {
-    if (mediaBlobUrl && activeChannel) {
-      try {
-        const response = await fetch(mediaBlobUrl);
-        const blob = await response.blob();
-        const file = new File([blob], "voice-message.wav", { type: blob.type });
-
-        await activeChannel.sendMessage({
-          attachments: [
-            {
-              file,
-              type: 'audio',
-            },
-          ],
-          text: 'Voice message',
-        });
-
-        clearBlobUrl();
-      } catch (error) {
-        console.error('Error sending voice message:', error);
-        toast({ title: 'Error', description: 'Failed to send voice message' });
-      }
-    }
-  };
-
-  const handlePlayPauseAudio = async (url: string) => {
-    try {
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-        audioRef.current.onended = () => setPlayingAudioUrl(null);
-      }
-
-      if (playingAudioUrl === url) {
-        if (audioRef.current.paused) {
-          await audioRef.current.play();
-        } else {
-          audioRef.current.pause();
-        }
-      } else {
-        if (!audioRef.current.paused) {
-          audioRef.current.pause();
-        }
-        audioRef.current.src = url;
-        await audioRef.current.play();
-        setPlayingAudioUrl(url);
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
-    }
-  };
-
   const customMessageRenderer = (messageProps: any) => {
     const { message } = messageProps;
-    if (message && message.attachments && message.attachments.length > 0 && message.attachments[0].type === 'audio') {
-      return (
-        <div className="custom-message">
-          <p>{message.text}</p>
-          <Button onClick={() => handlePlayPauseAudio(message.attachments[0].asset_url)}>Play/Pause Audio</Button>
-        </div>
-      );
-    }
     return <MessageSimple {...messageProps} />;
   };
 
@@ -492,17 +425,6 @@ const PersonalRoom: React.FC = () => {
               <ParticipantView key={participant.userId} participant={participant} />
             ))}
           </motion.div>
-          <div className="mt-4 flex items-center gap-2">
-            <Button onClick={startRecording}>Start Recording</Button>
-            <Button onClick={stopRecording}>Stop Recording</Button>
-            {mediaBlobUrl && (
-              <div className="flex items-center gap-2">
-                <Button onClick={handleSendVoiceMessage}>Send Voice Message</Button>
-                <Button onClick={() => handlePlayPauseAudio(mediaBlobUrl)}>Play/Pause</Button>
-                <audio ref={audioRef} />
-              </div>
-            )}
-          </div>
         </motion.div>
         <motion.div
           className="w-1/5 p-4 bg-white rounded-lg shadow-lg"
