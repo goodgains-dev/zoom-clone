@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useUser } from '@clerk/nextjs';
-import { StreamChat, Channel } from 'stream-chat';
+import { StreamChat, Channel, ChannelFilters, ChannelSort, DefaultGenerics } from 'stream-chat';
 import {
   Chat,
   Channel as StreamChannelComponent,
@@ -14,7 +14,7 @@ import {
   Window,
   MessageSimple
 } from 'stream-chat-react';
-import { StreamVideoClient, ParticipantView } from '@stream-io/video-react-sdk';
+import { StreamVideoClient, ParticipantView, StreamVideoParticipant, Call } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
@@ -56,10 +56,10 @@ const Container = styled.section`
 `;
 
 interface ChannelSettingsProps {
-  channel: Channel;
+  channel: Channel<DefaultGenerics>;
   roles: Record<string, string>;
   user: any;
-  onChannelUpdated: () => void;
+  onChannelUpdated: (channel: Channel<DefaultGenerics>) => void;
   onDeleteChannel: () => void;
 }
 
@@ -77,7 +77,7 @@ const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, user,
           name: newChannelName,
         },
       });
-      onChannelUpdated();
+      onChannelUpdated(channel);
       toast({ title: 'Success', description: 'Channel name updated successfully' });
     } catch (error) {
       console.error('Error updating channel name:', error);
@@ -137,10 +137,10 @@ const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, user,
 
 const PersonalRoom: React.FC = () => {
   const { user, isLoaded } = useUser();
-  const [client, setClient] = useState<StreamChat | null>(null);
+  const [client, setClient] = useState<StreamChat<DefaultGenerics> | null>(null);
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const [channels, setChannels] = useState<Channel<DefaultGenerics>[]>([]);
+  const [activeChannel, setActiveChannel] = useState<Channel<DefaultGenerics> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [newChannelName, setNewChannelName] = useState('');
@@ -152,6 +152,7 @@ const PersonalRoom: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [roles, setRoles] = useState<Record<string, string>>({}); // Store user roles
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Manage settings modal state
+  const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]); // Store call participants
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -169,13 +170,13 @@ const PersonalRoom: React.FC = () => {
           {
             id: user.id,
             name: user.username || user.id,
-            image: user.imageUrl,
+            image: user.setProfileImage,
           },
           token
         );
 
-        const filters = { members: { $in: [user.id] } };
-        const sort = [{ last_message_at: -1 }];
+        const filters: ChannelFilters<DefaultGenerics> = { members: { $in: [user.id] } };
+        const sort: ChannelSort<DefaultGenerics> = [{ last_message_at: -1 as any }];
         const fetchedChannels = await streamClient.queryChannels(filters, sort);
         setChannels(fetchedChannels);
 
@@ -185,7 +186,9 @@ const PersonalRoom: React.FC = () => {
           const membersWithRoles = await fetchedChannels[0].queryMembers({});
           const rolesMap: Record<string, string> = {};
           membersWithRoles.members.forEach(member => {
-            rolesMap[member.user_id] = member.role;
+            if (member.user_id) {
+              rolesMap[member.user_id] = member.role!;
+            }
           });
           setRoles(rolesMap);
         }
@@ -195,7 +198,10 @@ const PersonalRoom: React.FC = () => {
         // Initialize Stream Video Client
         const videoClient = new StreamVideoClient({
           apiKey: process.env.NEXT_PUBLIC_STREAM_VIDEO_API_KEY!,
-          user,
+          user: {
+            id: user.id,
+            name: user.username || user.id,
+          },
           token,
         });
         setVideoClient(videoClient);
@@ -247,9 +253,9 @@ const PersonalRoom: React.FC = () => {
     if (!client || !newChannelName) return;
 
     try {
-      const newChannel = client.channel('messaging', `channel-${newChannelName}-${user.id}`, {
+      const newChannel = client.channel('messaging', `channel-${newChannelName}-${user?.id ?? ''}`, {
         name: newChannelName,
-        members: [user.id],
+        members: [user?.id ?? ''],
       });
       await newChannel.create();
       setChannels([...channels, newChannel]);
@@ -283,11 +289,13 @@ const PersonalRoom: React.FC = () => {
     }
 
     try {
-      const call = await videoClient.call('default', `call-${activeChannel.id}`, {
-        members: activeChannel.state.members.map(member => member.user_id),
-      });
+      const call = await videoClient.call(`call-${activeChannel.id}`, Object.keys(activeChannel.state.members)[0]);
       setIsCallActive(true);
       call.join();
+
+      // Fetch participants and set them in state
+      const callParticipants: StreamVideoParticipant[] = [call as unknown as StreamVideoParticipant]; // Update the type to StreamVideoParticipant[]
+      setParticipants(callParticipants);
     } catch (error) {
       console.error('Error starting call:', error);
       toast({ title: 'Error', description: 'Failed to start call' });
@@ -429,7 +437,7 @@ const PersonalRoom: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
               >
-                {channel.data.name || channel.id}
+                {channel.data?.name || channel.id}
               </motion.li>
             ))}
           </ul>
@@ -451,8 +459,8 @@ const PersonalRoom: React.FC = () => {
           <Chat client={client!} theme="messaging light">
             <StreamChannelComponent channel={activeChannel!} Message={customMessageRenderer}>
               <Window>
-                <ChannelHeader className="bg-gray-200 p-4 rounded-t-lg" />
-                <MessageList className="flex-1 overflow-y-auto p-4 bg-gray-100" />
+                <ChannelHeader />
+                <MessageList />
                 <div className="mt-4 p-4 bg-gray-200 rounded-b-lg">
                   <MessageInput />
                 </div>
@@ -478,7 +486,9 @@ const PersonalRoom: React.FC = () => {
             transition={{ duration: 0.5 }}
           >
             <Button onClick={handleStartCall}>Start Call</Button>
-            {isCallActive && <ParticipantView />}
+            {isCallActive && participants.map(participant => (
+              <ParticipantView key={participant.userId} participant={participant} />
+            ))}
           </motion.div>
           <div className="mt-4 flex items-center gap-2">
             <Button onClick={startRecording}>Start Recording</Button>
@@ -526,7 +536,7 @@ const PersonalRoom: React.FC = () => {
               channel={activeChannel!}
               roles={roles}
               user={user}
-              onChannelUpdated={() => setActiveChannel({ ...activeChannel! })}
+              onChannelUpdated={setActiveChannel}
               onDeleteChannel={handleDeleteChannel}
             />
           </div>
