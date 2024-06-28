@@ -243,7 +243,7 @@ const PersonalRoom: React.FC = () => {
     if (!activeChannel) return;
 
     try {
-      const inviteLink = `${window.location.origin}/join?channelId=${activeChannel.id}`;
+      const inviteLink = `${window.location.origin}/?channelId=${activeChannel.id}`;
       navigator.clipboard.writeText(inviteLink);
       toast({ title: 'Success', description: 'Invite link copied to clipboard' });
     } catch (error) {
