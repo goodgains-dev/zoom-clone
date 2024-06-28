@@ -343,6 +343,26 @@ const PersonalRoom: React.FC = () => {
     );
   };
 
+  const joinChannelFromURL = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const channelId = urlParams.get('channelId');
+    if (channelId && client) {
+      try {
+        const channel = client.channel('messaging', channelId);
+        await channel.watch();
+        setActiveChannel(channel);
+        setChannels([...channels, channel]);
+      } catch (err) {
+        console.error('Error joining channel from URL:', err);
+        toast({ title: 'Error', description: 'Failed to join channel from URL' });
+      }
+    }
+  };
+
+  useEffect(() => {
+    joinChannelFromURL();
+  }, [client]);
+
   if (isLoading) return <Loader />;
   if (error) return <p>{error}</p>;
 
@@ -471,5 +491,7 @@ const PersonalRoom: React.FC = () => {
     </Container>
   );
 };
+
+export default PersonalRoom;
 
 export default PersonalRoom;
