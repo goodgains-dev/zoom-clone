@@ -14,7 +14,7 @@ import {
   Window,
   MessageSimple
 } from 'stream-chat-react';
-import { StreamVideoClient, VideoCall } from '@stream-io/video-react-sdk';
+import { StreamVideoClient, useCallStateHooks, CallingState, StreamTheme, ParticipantView } from '@stream-io/video-react-sdk';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
@@ -470,7 +470,7 @@ const PersonalRoom = () => {
             transition={{ duration: 0.5 }}
           >
             <Button onClick={handleStartCall}>Start Call</Button>
-            {isCallActive && <VideoCall />}
+            {isCallActive && <ParticipantView />}
           </motion.div>
           <div className="mt-4 flex items-center gap-2">
             <Button onClick={startRecording}>Start Recording</Button>
