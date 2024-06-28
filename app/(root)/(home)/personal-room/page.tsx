@@ -18,7 +18,7 @@ import { StreamVideoClient, ParticipantView } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
-import { tokenProvider } from '@/actions/stream.actions';
+import { tokenProvider } from '@/actions/stream.actions'; // Ensure this path is correct
 import { Button } from '@/components/ui/button'; // Ensure this path is correct
 import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 import 'stream-chat-react/dist/css/index.css'; // Ensure Stream's CSS is loaded
@@ -163,7 +163,7 @@ const PersonalRoom: React.FC = () => {
     const initChat = async () => {
       try {
         const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY!);
-        const token = await tokenProvider(user.id);
+        const token = await tokenProvider(); // Assuming tokenProvider does not require any arguments
 
         await streamClient.connectUser(
           {
