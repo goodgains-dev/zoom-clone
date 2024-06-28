@@ -5,23 +5,24 @@ import styled, { keyframes } from 'styled-components';
 import { useUser } from '@clerk/nextjs';
 import { StreamChat, Channel, ChannelFilters, ChannelSort, DefaultGenerics } from 'stream-chat';
 import {
-  Chat,
-  Channel as StreamChannelComponent,
-  ChannelHeader,
-  MessageList,
-  MessageInput,
-  Thread,
-  Window,
-  MessageSimple
+    Chat,
+    Channel as StreamChannelComponent,
+    ChannelHeader,
+    MessageList,
+    MessageInput,
+    Thread,
+    Window,
+    MessageSimple
 } from 'stream-chat-react';
 import { StreamVideoClient, ParticipantView, StreamVideoParticipant } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
-import Loader from '@/components/Loader'; // Ensure this path is correct
-import { tokenProvider } from '@/actions/stream.actions'; // Ensure this path is correct
-import { Button } from '@/components/ui/button'; // Ensure this path is correct
+import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 import 'stream-chat-react/dist/css/index.css'; // Ensure Stream's CSS is loaded
 import { FaTwitter, FaLinkedin, FaGithub } from 'react-icons/fa';
+import { tokenProvider } from '@/actions/stream.actions'; // Ensure this path is correct
+import Loader from '@/components/Loader'; // Ensure this path is correct
+import { Button } from '@/components/ui/button'; // Ensure this path is correct
 
 const colorShift = keyframes`
   0% {
@@ -136,6 +137,8 @@ const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, user,
 
 const PersonalRoom: React.FC = () => {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const { channelId } = router.query;
   const [client, setClient] = useState<StreamChat<DefaultGenerics> | null>(null);
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [channels, setChannels] = useState<Channel<DefaultGenerics>[]>([]);
@@ -151,15 +154,6 @@ const PersonalRoom: React.FC = () => {
   const [roles, setRoles] = useState<Record<string, string>>({}); // Store user roles
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Manage settings modal state
   const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]); // Store call participants
-
-  const createDefaultChannel = async (client: StreamChat<DefaultGenerics>, userId: string) => {
-    const defaultChannel = client.channel('messaging', 'default-channel', {
-      name: 'Default Channel',
-      members: [userId],
-    });
-    await defaultChannel.create();
-    return defaultChannel;
-  };
 
   useEffect(() => {
     if (!user || !isLoaded) return;
@@ -183,11 +177,7 @@ const PersonalRoom: React.FC = () => {
         const fetchedChannels = await streamClient.queryChannels(filters, sort);
         setChannels(fetchedChannels);
 
-        if (fetchedChannels.length === 0) {
-          const defaultChannel = await createDefaultChannel(streamClient, user.id);
-          setChannels([defaultChannel]);
-          setActiveChannel(defaultChannel);
-        } else {
+        if (fetchedChannels.length > 0) {
           setActiveChannel(fetchedChannels[0]);
           // Fetch roles for the members
           const membersWithRoles = await fetchedChannels[0].queryMembers({});
@@ -212,6 +202,15 @@ const PersonalRoom: React.FC = () => {
           token,
         });
         setVideoClient(videoClient);
+
+        // Join the channel if channelId is in the query params
+        if (channelId) {
+          const channel = streamClient.channel('messaging', channelId as string, {
+            members: [user.id],
+          });
+          await channel.watch();
+          setActiveChannel(channel);
+        }
       } catch (err) {
         console.error('Error initializing chat:', err);
         setError('Failed to initialize chat');
@@ -230,7 +229,7 @@ const PersonalRoom: React.FC = () => {
         videoClient.disconnectUser();
       }
     };
-  }, [user, isLoaded]);
+  }, [user, isLoaded, channelId]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -247,7 +246,7 @@ const PersonalRoom: React.FC = () => {
     if (!activeChannel) return;
 
     try {
-      const inviteLink = `${window.location.origin}/join/${activeChannel.id}`;
+      const inviteLink = `${window.location.origin}/join?channelId=${activeChannel.id}`;
       navigator.clipboard.writeText(inviteLink);
       toast({ title: 'Success', description: 'Invite link copied to clipboard' });
     } catch (error) {
@@ -301,16 +300,12 @@ const PersonalRoom: React.FC = () => {
       call.join();
 
       // Fetch participants and set them in state
-      const Participants = participants; // Access participants using the 'participants' property
+      const Participants = participants;
       setParticipants(Participants);
     } catch (error) {
       console.error('Error starting call:', error);
       toast({ title: 'Error', description: 'Failed to start call' });
     }
-  };
-
-  const customMessageRenderer = (messageProps: any) => {
-    return <MessageSimple {...messageProps} />;
   };
 
   const handleMemberClick = (member: any) => {
@@ -354,6 +349,7 @@ const PersonalRoom: React.FC = () => {
 
   if (isLoading) return <Loader />;
   if (error) return <p>{error}</p>;
+  if (!activeChannel) return <p>No Channels Found. Create a new channel to start chatting.</p>;
 
   return (
     <Container>
@@ -403,7 +399,7 @@ const PersonalRoom: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <Chat client={client!} theme="messaging light">
-            <StreamChannelComponent channel={activeChannel!} Message={customMessageRenderer}>
+            <StreamChannelComponent channel={activeChannel!}>
               <Window>
                 <ChannelHeader />
                 <MessageList />
