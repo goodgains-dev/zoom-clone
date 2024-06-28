@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useUser } from '@clerk/nextjs';
-import { StreamChat } from 'stream-chat';
+import { StreamChat, Channel } from 'stream-chat';
 import {
   Chat,
   Channel as StreamChannelComponent,
@@ -55,7 +55,15 @@ const Container = styled.section`
   text-align: black;
 `;
 
-const ChannelSettings = ({ channel, roles, user, onChannelUpdated, onDeleteChannel }) => {
+interface ChannelSettingsProps {
+  channel: Channel;
+  roles: Record<string, string>;
+  user: any;
+  onChannelUpdated: () => void;
+  onDeleteChannel: () => void;
+}
+
+const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, onChannelUpdated, onDeleteChannel }) => {
   const [newChannelName, setNewChannelName] = useState('');
   const { toast } = useToast();
   const [memberRoles, setMemberRoles] = useState(roles);
@@ -77,7 +85,7 @@ const ChannelSettings = ({ channel, roles, user, onChannelUpdated, onDeleteChann
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
+  const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await channel.updateMember(userId, { role: newRole });
       setMemberRoles({ ...memberRoles, [userId]: newRole });
@@ -125,25 +133,25 @@ const ChannelSettings = ({ channel, roles, user, onChannelUpdated, onDeleteChann
   );
 };
 
-const PersonalRoom = () => {
+const PersonalRoom: React.FC = () => {
   const { user, isLoaded } = useUser();
-  const [client, setClient] = useState(null);
-  const [videoClient, setVideoClient] = useState(null);
-  const [channels, setChannels] = useState([]);
-  const [activeChannel, setActiveChannel] = useState(null);
+  const [client, setClient] = useState<StreamChat | null>(null);
+  const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [newChannelName, setNewChannelName] = useState('');
   const { toast } = useToast();
   const [inviteUserId, setInviteUserId] = useState('');
-  const [members, setMembers] = useState([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [isCallActive, setIsCallActive] = useState(false);
-  const [playingAudioUrl, setPlayingAudioUrl] = useState(null);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [roles, setRoles] = useState({}); // Store user roles
+  const [playingAudioUrl, setPlayingAudioUrl] = useState<string | null>(null);
+  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [roles, setRoles] = useState<Record<string, string>>({}); // Store user roles
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Manage settings modal state
 
-  const audioRef = useRef(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } = useReactMediaRecorder({ audio: true });
 
@@ -152,7 +160,7 @@ const PersonalRoom = () => {
 
     const initChat = async () => {
       try {
-        const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY);
+        const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY!);
         const token = await tokenProvider(user.id);
 
         await streamClient.connectUser(
@@ -173,7 +181,7 @@ const PersonalRoom = () => {
           setActiveChannel(fetchedChannels[0]);
           // Fetch roles for the members
           const membersWithRoles = await fetchedChannels[0].queryMembers({});
-          const rolesMap = {};
+          const rolesMap: Record<string, string> = {};
           membersWithRoles.members.forEach(member => {
             rolesMap[member.user_id] = member.role;
           });
@@ -184,7 +192,7 @@ const PersonalRoom = () => {
 
         // Initialize Stream Video Client
         const videoClient = new StreamVideoClient({
-          apiKey: process.env.NEXT_PUBLIC_STREAM_VIDEO_API_KEY,
+          apiKey: process.env.NEXT_PUBLIC_STREAM_VIDEO_API_KEY!,
           user,
           token,
         });
@@ -309,7 +317,7 @@ const PersonalRoom = () => {
     }
   };
 
-  const handlePlayPauseAudio = async (url) => {
+  const handlePlayPauseAudio = async (url: string) => {
     try {
       if (!audioRef.current) {
         audioRef.current = new Audio();
@@ -335,7 +343,7 @@ const PersonalRoom = () => {
     }
   };
 
-  const customMessageRenderer = (messageProps) => {
+  const customMessageRenderer = (messageProps: any) => {
     const { message } = messageProps;
     if (message && message.attachments && message.attachments.length > 0 && message.attachments[0].type === 'audio') {
       return (
@@ -348,7 +356,7 @@ const PersonalRoom = () => {
     return <MessageSimple {...messageProps} />;
   };
 
-  const handleMemberClick = (member) => {
+  const handleMemberClick = (member: any) => {
     setSelectedMember(member);
   };
 
@@ -356,7 +364,7 @@ const PersonalRoom = () => {
     setSelectedMember(null);
   };
 
-  const ProfileModal = ({ member }) => {
+  const ProfileModal: React.FC<{ member: any }> = ({ member }) => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg relative">
@@ -438,8 +446,8 @@ const PersonalRoom = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Chat client={client} theme="messaging light">
-            <StreamChannelComponent channel={activeChannel} Message={customMessageRenderer}>
+          <Chat client={client!} theme="messaging light">
+            <StreamChannelComponent channel={activeChannel!} Message={customMessageRenderer}>
               <Window>
                 <ChannelHeader className="bg-gray-200 p-4 rounded-t-lg" />
                 <MessageList className="flex-1 overflow-y-auto p-4 bg-gray-100" />
@@ -513,10 +521,10 @@ const PersonalRoom = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg relative">
             <button className="absolute top-0 right-0 p-2" onClick={() => setIsSettingsOpen(false)}>X</button>
             <ChannelSettings
-              channel={activeChannel}
+              channel={activeChannel!}
               roles={roles}
               user={user}
-              onChannelUpdated={() => setActiveChannel({ ...activeChannel })}
+              onChannelUpdated={() => setActiveChannel({ ...activeChannel! })}
               onDeleteChannel={handleDeleteChannel}
             />
           </div>
