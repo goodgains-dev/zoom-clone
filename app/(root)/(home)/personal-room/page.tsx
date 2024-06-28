@@ -152,6 +152,15 @@ const PersonalRoom: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // Manage settings modal state
   const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]); // Store call participants
 
+  const createDefaultChannel = async (client: StreamChat<DefaultGenerics>, userId: string) => {
+    const defaultChannel = client.channel('messaging', 'default-channel', {
+      name: 'Default Channel',
+      members: [userId],
+    });
+    await defaultChannel.create();
+    return defaultChannel;
+  };
+
   useEffect(() => {
     if (!user || !isLoaded) return;
 
@@ -174,7 +183,11 @@ const PersonalRoom: React.FC = () => {
         const fetchedChannels = await streamClient.queryChannels(filters, sort);
         setChannels(fetchedChannels);
 
-        if (fetchedChannels.length > 0) {
+        if (fetchedChannels.length === 0) {
+          const defaultChannel = await createDefaultChannel(streamClient, user.id);
+          setChannels([defaultChannel]);
+          setActiveChannel(defaultChannel);
+        } else {
           setActiveChannel(fetchedChannels[0]);
           // Fetch roles for the members
           const membersWithRoles = await fetchedChannels[0].queryMembers({});
@@ -341,7 +354,6 @@ const PersonalRoom: React.FC = () => {
 
   if (isLoading) return <Loader />;
   if (error) return <p>{error}</p>;
-  if (!activeChannel) return <p>No Channels Found. Create a new channel to start chatting.</p>;
 
   return (
     <Container>
