@@ -213,7 +213,9 @@ const PersonalRoom: React.FC = () => {
       }
     };
 
-    initChat();
+    if (typeof window !== 'undefined') {
+      initChat();
+    }
 
     return () => {
       if (client) {
@@ -546,4 +548,4 @@ const PersonalRoom: React.FC = () => {
   );
 };
 
-export default PersonalRoom
+export default PersonalRoom;
