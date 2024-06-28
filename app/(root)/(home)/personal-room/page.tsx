@@ -14,7 +14,7 @@ import {
   Window,
   MessageSimple
 } from 'stream-chat-react';
-import { StreamVideoClient, useCallStateHooks, CallingState, StreamTheme, ParticipantView } from '@stream-io/video-react-sdk';
+import { StreamVideoClient, ParticipantView } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
