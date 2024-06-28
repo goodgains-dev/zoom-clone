@@ -5,18 +5,16 @@ import styled, { keyframes } from 'styled-components';
 import { useUser } from '@clerk/nextjs';
 import { StreamChat, Channel, ChannelFilters, ChannelSort, DefaultGenerics } from 'stream-chat';
 import {
-    Chat,
-    Channel as StreamChannelComponent,
-    ChannelHeader,
-    MessageList,
-    MessageInput,
-    Thread,
-    Window,
-    MessageSimple
+  Chat,
+  Channel as StreamChannelComponent,
+  ChannelHeader,
+  MessageList,
+  MessageInput,
+  Thread,
+  Window
 } from 'stream-chat-react';
 import { StreamVideoClient, ParticipantView, StreamVideoParticipant } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/router';
 import { useToast } from '@/components/ui/use-toast'; // Ensure this path is correct
 import 'stream-chat-react/dist/css/index.css'; // Ensure Stream's CSS is loaded
 import { FaTwitter, FaLinkedin, FaGithub } from 'react-icons/fa';
@@ -137,8 +135,6 @@ const ChannelSettings: React.FC<ChannelSettingsProps> = ({ channel, roles, user,
 
 const PersonalRoom: React.FC = () => {
   const { user, isLoaded } = useUser();
-  const router = useRouter();
-  const { channelId } = router.query;
   const [client, setClient] = useState<StreamChat<DefaultGenerics> | null>(null);
   const [videoClient, setVideoClient] = useState<StreamVideoClient | null>(null);
   const [channels, setChannels] = useState<Channel<DefaultGenerics>[]>([]);
@@ -156,9 +152,9 @@ const PersonalRoom: React.FC = () => {
   const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]); // Store call participants
 
   useEffect(() => {
-    if (!user || !isLoaded) return;
-
     const initChat = async () => {
+      if (!user || !isLoaded) return;
+
       try {
         const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY!);
         const token = await tokenProvider(); // Assuming tokenProvider does not require any arguments
@@ -188,6 +184,15 @@ const PersonalRoom: React.FC = () => {
             }
           });
           setRoles(rolesMap);
+        } else {
+          // Create a default channel if no channels are found
+          const defaultChannel = streamClient.channel('messaging', `default-${user.id}`, {
+            name: 'Default Channel',
+            members: [user.id],
+          });
+          await defaultChannel.create();
+          setChannels([defaultChannel]);
+          setActiveChannel(defaultChannel);
         }
 
         setClient(streamClient);
@@ -202,15 +207,6 @@ const PersonalRoom: React.FC = () => {
           token,
         });
         setVideoClient(videoClient);
-
-        // Join the channel if channelId is in the query params
-        if (channelId) {
-          const channel = streamClient.channel('messaging', channelId as string, {
-            members: [user.id],
-          });
-          await channel.watch();
-          setActiveChannel(channel);
-        }
       } catch (err) {
         console.error('Error initializing chat:', err);
         setError('Failed to initialize chat');
@@ -229,7 +225,7 @@ const PersonalRoom: React.FC = () => {
         videoClient.disconnectUser();
       }
     };
-  }, [user, isLoaded, channelId]);
+  }, [user, isLoaded]);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -349,7 +345,6 @@ const PersonalRoom: React.FC = () => {
 
   if (isLoading) return <Loader />;
   if (error) return <p>{error}</p>;
-  if (!activeChannel) return <p>No Channels Found. Create a new channel to start chatting.</p>;
 
   return (
     <Container>
