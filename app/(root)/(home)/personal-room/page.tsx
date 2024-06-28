@@ -14,7 +14,7 @@ import {
   Window,
   MessageSimple
 } from 'stream-chat-react';
-import { StreamVideoClient, ParticipantView, StreamVideoParticipant, Call } from '@stream-io/video-react-sdk';
+import { StreamVideoClient, ParticipantView, StreamVideoParticipant } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import Loader from '@/components/Loader'; // Ensure this path is correct
@@ -294,8 +294,8 @@ const PersonalRoom: React.FC = () => {
       call.join();
 
       // Fetch participants and set them in state
-      const callParticipants: StreamVideoParticipant[] = [call as unknown as StreamVideoParticipant]; // Update the type to StreamVideoParticipant[]
-      setParticipants(callParticipants);
+      const Participants = participants; // Access participants using the 'participants' property
+      setParticipants(Participants);
     } catch (error) {
       console.error('Error starting call:', error);
       toast({ title: 'Error', description: 'Failed to start call' });
@@ -546,4 +546,4 @@ const PersonalRoom: React.FC = () => {
   );
 };
 
-export default PersonalRoom;
+export default PersonalRoom
