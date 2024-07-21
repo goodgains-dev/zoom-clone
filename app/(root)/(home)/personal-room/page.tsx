@@ -41,6 +41,7 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useGetCalls } from '@/hooks/useGetCalls';
+import * as THREE from 'three';
 import MeetingCard from '@/components/MeetingCard';
 import Confetti from 'react-confetti';
 import axios from 'axios';
@@ -147,15 +148,6 @@ const BottomNav = styled.nav`
     opacity: 1;
   }
 `;
-
-const Cube = () => (
-  <mesh scale={0.5}>
-    <boxGeometry args={[1, 1, 1]} />
-    <meshStandardMaterial color="orange" />
-  </mesh>
-);
-
-import * as THREE from 'three';
 
 const CoinbaseLogo = ({ logoUrl }: { logoUrl: string }) => {
   const logoRef = useRef<THREE.Object3D>(null);
@@ -351,8 +343,6 @@ const PersonalRoom: React.FC = () => {
   };
 
   const handleJoinChannel = async () => {
-    if (!inviteLink) return;
-
     try {
       const streamClient = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_API_KEY!);
       const token = await tokenProvider();
@@ -937,5 +927,7 @@ const ChannelSettings: React.FC<{ channel: Channel; roles: Record<string, string
     </div>
   );
 };
+
+export default PersonalRoom;
 
 export default PersonalRoom;
