@@ -40,14 +40,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';;
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { loadStripe } from '@stripe/stripe-js';
 import { Call, CallRecording } from '@stream-io/video-react-sdk';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import MeetingCard from '@/components/MeetingCard';
 import Confetti from 'react-confetti';
 import axios from 'axios';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
 
 const colorShift = keyframes`
   0% {
@@ -813,7 +811,7 @@ const CallList = ({ type }: { type: 'ended' | 'upcoming' | 'recordings' }) => {
   useEffect(() => {
     const fetchRecordings = async () => {
       const callData = await Promise.all(
-        callRecordings?.map((meeting) => meeting.queryRecordings()) ?? [],
+        callRecordings?.map((meeting: { queryRecordings: () => any; }) => meeting.queryRecordings()) ?? [],
       );
 
       const recordings = callData
@@ -986,3 +984,4 @@ const ChannelSettings: React.FC<{ channel: Channel; roles: Record<string, string
 };
 
 export default PersonalRoom;
+
