@@ -14,7 +14,7 @@ import {
   Thread,
   Window
 } from 'stream-chat-react';
-import { StreamVideoClient, StreamVideoParticipant, useStreamVideoClient } from '@stream-io/video-react-sdk';
+import { StreamVideoParticipant, useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import 'stream-chat-react/dist/css/index.css';
@@ -38,10 +38,9 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { OrbitControls } from '@react-three/drei';;
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Call, CallRecording } from '@stream-io/video-react-sdk';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import MeetingCard from '@/components/MeetingCard';
@@ -82,7 +81,7 @@ const liquidBorder = keyframes`
     border-color: #ff9a9e;
   }
 `;
- 
+
 const Container = styled.section`
   display: flex;
   flex-direction: column;
@@ -159,12 +158,16 @@ const Cube = () => (
   </mesh>
 );
 
-const CoinbaseLogo = ({ logoUrl }) => {
-  const logoRef = useRef();
-  const gltf = useLoader(GLTFLoader, logoUrl || '/Coinbase.obj');
+import * as THREE from 'three';
+
+const CoinbaseLogo = ({ logoUrl }: { logoUrl: string }) => {
+  const logoRef = useRef<THREE.Object3D>(null);
+  const gltf = useLoader(GLTFLoader, logoUrl || '/Coinbase.glb');
 
   useFrame(() => {
-    logoRef.current.rotation.y += 0.02;
+    if (logoRef.current) {
+      logoRef.current.rotation.y += 0.02;
+    }
   });
 
   return (
@@ -212,7 +215,7 @@ const PersonalRoom: React.FC = () => {
           {
             id: user.id,
             name: user.username || user.id,
-            image: user.profileImageUrl,
+            image: user.setProfileImage,
           },
           token
         );
@@ -346,10 +349,10 @@ const PersonalRoom: React.FC = () => {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
       router.push(callLink);
-      setParticipants(call.participants);
+      setParticipants;
     } catch (error) {
       console.error('Error starting call:', error);
-      toast({ title: 'Error', description: `Failed to start ${callType} call: ${error.message}` });
+      toast({ title: 'Error', description: `Failed to start ${callType} call}` });
     }
   };
 
@@ -364,7 +367,7 @@ const PersonalRoom: React.FC = () => {
         {
           id: user?.id ?? '',
           name: user?.username || (user?.id ?? ''),
-          image: user?.profileImageUrl,
+          image: user?.setProfileImage,
         },
         token
       );
@@ -465,7 +468,6 @@ const PersonalRoom: React.FC = () => {
       setAiResponse(response.data.result);
     } catch (error) {
       console.error('Error generating response:', error);
-      setAiResponse('An error occurred while generating the response.');
     }
   };
 
@@ -564,9 +566,6 @@ const PersonalRoom: React.FC = () => {
       <div className="flex w-full max-w-7xl gap-4 h-full">
         <LiquidBox
           className="w-1/5 p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
         >
           <Typography variant="h6" gutterBottom>Channels</Typography>
           <List>
@@ -579,9 +578,6 @@ const PersonalRoom: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
               >
-                <ListItemAvatar>
-                  <Avatar src={channel.data?.image} alt={channel.data?.name || channel.id} />
-                </ListItemAvatar>
                 {channel.data?.name || channel.id}
               </motion.li>
             ))}
@@ -592,10 +588,6 @@ const PersonalRoom: React.FC = () => {
             onChange={(e) => setNewChannelName(e.target.value)}
             fullWidth
             margin="normal"
-            css={css`
-              backdrop-filter: blur(10px);
-              background: rgba(255, 255, 255, 0.1);
-            `}
           />
           <ShiftingButton onClick={handleCreateChannel} fullWidth>
             Create Channel
@@ -623,10 +615,6 @@ const PersonalRoom: React.FC = () => {
           </div>
         </LiquidBox>
         <LiquidBox
-          className="w-3/5 p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
         >
           <ChatContainer>
             <div className="flex justify-between items-center mb-4">
@@ -654,11 +642,10 @@ const PersonalRoom: React.FC = () => {
                   <ChannelHeader />
                   <MessageList />
                   <div
-                    className="mt-4 p-4 rounded-b-lg"
-                    css={css`
+                    className={`mt-4 p-4 rounded-b-lg ${css`
                       backdrop-filter: blur(10px);
                       background: rgba(255, 255, 255, 0.1);
-                    `}
+                    `}`}
                   >
                     <MessageInput />
                   </div>
@@ -669,10 +656,6 @@ const PersonalRoom: React.FC = () => {
           </ChatContainer>
         </LiquidBox>
         <LiquidBox
-          className="w-1/5 p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
         >
           <Typography variant="h6" gutterBottom>Members</Typography>
           <List>
@@ -700,7 +683,7 @@ const PersonalRoom: React.FC = () => {
               <ambientLight />
               <pointLight position={[10, 10, 10]} />
               <OrbitControls />
-              <CoinbaseLogo logoUrl={logoUrl} />
+              <CoinbaseLogo logoUrl={logoUrl || ''} />
             </Canvas>
             <Button variant="contained" component="label" fullWidth style={{ color: 'white', marginTop: '10px' }}>
               Change Logo
@@ -785,7 +768,7 @@ const PersonalRoom: React.FC = () => {
         <IconButton onClick={() => setIsAiModalOpen(true)} style={{ color: 'white' }}>
           <FaRobot />
         </IconButton>
-        <IconButton onClick={() => router.push('/Calendar')} style={{ color: 'white' }}>
+        <IconButton onClick={() => router.push('/upcoming')} style={{ color: 'white' }}>
           <FaCalendar />
         </IconButton>
         <IconButton onClick={() => router.push('/Tasks')} style={{ color: 'white' }}>
