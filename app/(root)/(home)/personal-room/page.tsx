@@ -14,7 +14,7 @@ import {
   Thread,
   Window
 } from 'stream-chat-react';
-import { StreamVideoParticipant, useStreamVideoClient, Call, CallRecording } from '@stream-io/video-react-sdk';
+import { useStreamVideoClient, Call, CallRecording } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import 'stream-chat-react/dist/css/index.css';
