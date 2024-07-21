@@ -91,7 +91,7 @@ function Dialog({ children }: { children: React.ReactNode }) {
   return <div className="dialog">{children}</div>;
 }
 
-function DialogTrigger({ asChild, children }: { asChild?: boolean; children: React.ReactElement }) {
+function DialogTrigger({  children }: { asChild?: boolean; children: React.ReactElement }) {
   return React.cloneElement(children, { onClick: () => console.log('Open dialog') });
 }
 
@@ -473,24 +473,5 @@ const TasksPage = () => {
   );
 };
 
-const SignIn = () => {
-  const router = useRouter();
-  useEffect(() => {
-    router.push('/signin');
-  }, [router]);
-
-  return <div>Please Sign In</div>;
-};
-
-const Tasks = () => (
-  <>
-    <SignedIn>
-      <TasksPage />
-    </SignedIn>
-    <SignedOut>
-      <SignIn />
-    </SignedOut>
-  </>
-);
 
 export default TasksPage;
