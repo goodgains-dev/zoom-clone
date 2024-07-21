@@ -14,7 +14,7 @@ import {
   Thread,
   Window
 } from 'stream-chat-react';
-import { StreamVideoParticipant, useStreamVideoClient } from '@stream-io/video-react-sdk';
+import { StreamVideoParticipant, useStreamVideoClient, Call, CallRecording } from '@stream-io/video-react-sdk';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
 import 'stream-chat-react/dist/css/index.css';
@@ -38,9 +38,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';;
+import { OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Call, CallRecording } from '@stream-io/video-react-sdk';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import MeetingCard from '@/components/MeetingCard';
 import Confetti from 'react-confetti';
@@ -182,14 +181,12 @@ const PersonalRoom: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [newChannelName, setNewChannelName] = useState('');
   const { toast } = useToast();
-  const [inviteUserId, setInviteUserId] = useState('');
   const [inviteLink, setInviteLink] = useState('');
   const [members, setMembers] = useState<any[]>([]);
-  const [isCallActive, setIsCallActive] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [roles, setRoles] = useState<Record<string, string>>({});
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [participants, setParticipants] = useState<StreamVideoParticipant[]>([]);
+  const [setParticipants] = useState<StreamVideoParticipant[]>([]);
   const [modelType, setModelType] = useState('cube');
   const [background, setBackground] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -381,11 +378,7 @@ const PersonalRoom: React.FC = () => {
       toast({ title: 'Error', description: 'Failed to join channel' });
     }
   };
-
-  const handleModelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setModelType(event.target.value);
-  };
-
+  
   const handleBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -984,4 +977,3 @@ const ChannelSettings: React.FC<{ channel: Channel; roles: Record<string, string
 };
 
 export default PersonalRoom;
-
