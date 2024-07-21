@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import {  useUser,  UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
+import { ClerkProvider, useUser, SignIn, SignedIn, SignedOut, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -141,12 +141,12 @@ const sendEmailInvite = async (emails: string[], callLink: string, description: 
 const CalendarPage = () => {
   const { user } = useUser();
   const { organization } = useOrganization();
-  const { upcomingCalls} = useGetCalls();
+  const { upcomingCalls } = useGetCalls();
   const [calls, setCalls] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [meetingState, setMeetingState] = useState<'isScheduleMeeting' | 'isJoiningMeeting' | 'isInstantMeeting' | undefined>(undefined);
+  const [ MeetingState, setMeetingState] = useState<'isScheduleMeeting' | 'isJoiningMeeting' | 'isInstantMeeting' | undefined>(undefined);
   const [values, setValues] = useState(initialValues);
-  const [callDetail, setCallDetail] = useState<Call>();
+  const [callDetail, setCallDetail] = useState<Call | null>(null);
   const client = useStreamVideoClient();
   const { toast } = useToast();
   const localizer = momentLocalizer(moment);
@@ -155,7 +155,7 @@ const CalendarPage = () => {
 
   useEffect(() => {
     if (user && user.publicMetadata.calls) {
-      setCalls;
+      setCalls(calls);
     }
   }, [user]);
 
@@ -199,7 +199,6 @@ const CalendarPage = () => {
           primaryEmailAddressId: string;
           primaryPhoneNumberId: string;
           primaryWeb3WalletId: string;
-          unsafeMetadata: UserUnsafeMetadata;
           calls: any[];
         }> = { ...user.publicMetadata, calls: updatedCalls };
         await user.update(publicMetadata);
@@ -211,7 +210,7 @@ const CalendarPage = () => {
 
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setValues({ ...values, dateTime: start, endTime: end });
-    setMeetingState('isScheduleMeeting');
+    setMeetingState(MeetingState);
     setOpenDialog(true);
   };
 
@@ -251,7 +250,7 @@ const CalendarPage = () => {
         },
       });
 
-      setCallDetail(call);
+      setCallDetail( callDetail );
       toast({
         title: 'Meeting Created',
       });
@@ -454,6 +453,4 @@ const CalendarPage = () => {
   );
 };
 
-
 export default CalendarPage;
-
