@@ -187,7 +187,6 @@ const PersonalRoom: React.FC = () => {
   const [roles, setRoles] = useState<Record<string, string>>({});
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [setParticipants] = useState<StreamVideoParticipant[]>([]);
-  const [modelType, setModelType] = useState('cube');
   const [background, setBackground] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
@@ -378,7 +377,7 @@ const PersonalRoom: React.FC = () => {
       toast({ title: 'Error', description: 'Failed to join channel' });
     }
   };
-  
+
   const handleBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -405,40 +404,6 @@ const PersonalRoom: React.FC = () => {
     }
   };
 
-  const handleProfileImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const profileImageUrl = e.target?.result as string;
-        handleUpdateChannelAvatar(profileImageUrl);
-        localStorage.setItem('profileImageUrl', profileImageUrl);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleUpdateChannelAvatar = async (profileImageUrl: string) => {
-    if (!activeChannel) return;
-
-    try {
-      await activeChannel.updatePartial({ set: { image: profileImageUrl } });
-      toast({ title: 'Success', description: 'Channel avatar updated successfully' });
-    } catch (error) {
-      console.error('Error updating channel avatar:', error);
-      toast({ title: 'Error', description: 'Failed to update channel avatar' });
-    }
-  };
-
-  const renderModel = () => {
-    switch (modelType) {
-      case 'cube':
-        return <Cube />;
-      default:
-        return <Cube />;
-    }
-  };
-
   const handleMemberClick = (member: any) => {
     setSelectedMember(member);
   };
@@ -447,9 +412,6 @@ const PersonalRoom: React.FC = () => {
     setSelectedMember(null);
   };
 
-  const handleSubscribe = async () => {
-    setIsSubscriptionModalOpen(true);
-  };
 
   const handleAiSubmit = async () => {
     try {
