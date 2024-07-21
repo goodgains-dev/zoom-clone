@@ -929,5 +929,3 @@ const ChannelSettings: React.FC<{ channel: Channel; roles: Record<string, string
 };
 
 export default PersonalRoom;
-
-export default PersonalRoom;
