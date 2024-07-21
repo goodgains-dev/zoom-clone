@@ -178,7 +178,6 @@ const PersonalRoom: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<any | null>(null);
   const [roles, setRoles] = useState<Record<string, string>>({});
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [setParticipants] = useState<StreamVideoParticipant[]>([]);
   const [background, setBackground] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
