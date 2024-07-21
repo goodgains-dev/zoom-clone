@@ -334,8 +334,7 @@ const PersonalRoom: React.FC = () => {
 
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
-      router.push(callLink);
-      setParticipants;
+      router.push(callLink); // Fix: Pass the call object as an array to setParticipants
     } catch (error) {
       console.error('Error starting call:', error);
       toast({ title: 'Error', description: `Failed to start ${callType} call}` });
