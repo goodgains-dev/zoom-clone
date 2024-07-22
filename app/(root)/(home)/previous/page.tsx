@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import {  useUser, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
+import { useUser, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -15,7 +15,6 @@ import {
   TextField,
   IconButton,
   Typography,
-  Box,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
@@ -104,6 +103,15 @@ const ViewButtons = styled.div`
   margin-bottom: 10px;
 `;
 
+interface CallEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+  organizationId?: string;
+}
+
 const initialValues = {
   dateTime: new Date(),
   endTime: new Date(),
@@ -142,11 +150,9 @@ const CalendarPage = () => {
   const { user } = useUser();
   const { organization } = useOrganization();
   const { upcomingCalls } = useGetCalls();
-  const [calls, setCalls] = useState([]);
+  const [calls, setCalls] = useState<CallEvent[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [ MeetingState, setMeetingState] = useState<'isScheduleMeeting' | 'isJoiningMeeting' | 'isInstantMeeting' | undefined>(undefined);
   const [values, setValues] = useState(initialValues);
-  const [callDetail, setCallDetail] = useState<Call | null>(null);
   const client = useStreamVideoClient();
   const { toast } = useToast();
   const localizer = momentLocalizer(moment);
@@ -170,7 +176,7 @@ const CalendarPage = () => {
           allDay: false,
           organizationId: call.state.custom?.organizationId || '',
         }))
-        .filter((callEvent) => !calls.some((call: { id: string }) => call.id === callEvent.id));
+        .filter((callEvent) => !calls.some((call) => call.id === callEvent.id));
     }
     return [];
   }, [upcomingCalls, calls]);
@@ -183,16 +189,14 @@ const CalendarPage = () => {
 
   const filteredCalls = useMemo(() => {
     if (organization) {
-      return calls.filter((call) => (call as { organizationId: string }).organizationId === organization.id);
+      return calls.filter((call) => call.organizationId === organization.id);
     }
-    return calls.filter((call) => !(call as { organizationId: string }).organizationId);
+    return calls.filter((call) => !call.organizationId);
   }, [calls, organization]);
-
 
 
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setValues({ ...values, dateTime: start, endTime: end });
-    setMeetingState(MeetingState);
     setOpenDialog(true);
   };
 
@@ -231,7 +235,6 @@ const CalendarPage = () => {
         },
       });
 
-      setCallDetail( callDetail );
       toast({
         title: 'Meeting Created',
       });
@@ -287,7 +290,7 @@ const CalendarPage = () => {
         <CalendarWrapper>
           <CalendarContainer>
             <ViewButtons>
-              <Box display="flex" flexDirection="row">
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <Button onClick={() => handleNavigate(new Date())}>Today</Button>
                 <Button onClick={() => handleNavigate(moment(date).subtract(1, 'month').toDate())}>
                   Back
@@ -295,12 +298,12 @@ const CalendarPage = () => {
                 <Button onClick={() => handleNavigate(moment(date).add(1, 'month').toDate())}>
                   Next
                 </Button>
-              </Box>
-              <Box display="flex" flexDirection="row">
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <Button onClick={() => setView(Views.MONTH)}>Month</Button>
                 <Button onClick={() => setView(Views.WEEK)}>Week</Button>
                 <Button onClick={() => setView(Views.DAY)}>Day</Button>
-              </Box>
+              </div>
             </ViewButtons>
             <Calendar
               localizer={localizer}
@@ -329,7 +332,6 @@ const CalendarPage = () => {
                 selected={values.dateTime}
                 onChange={(date) => {
                   setValues({ ...values, dateTime: date! });
-                  setMeetingState('isScheduleMeeting');
                   setOpenDialog(true); // Open the dialog when a date is selected
                 }}
                 inline
