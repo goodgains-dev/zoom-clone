@@ -153,7 +153,7 @@ const CalendarPage = () => {
   const [calls, setCalls] = useState<CallEvent[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [values, setValues] = useState(initialValues);
-  const client = useStreamVideoClient();
+  const client = useStreamVideoClient();;
   const { toast } = useToast();
   const localizer = momentLocalizer(moment);
   const [view, setView] = useState(Views.MONTH); // Default view is month
