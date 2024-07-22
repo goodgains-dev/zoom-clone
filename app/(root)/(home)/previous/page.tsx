@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import { ClerkProvider, useUser, SignIn, SignedIn, SignedOut, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
+import {  useUser, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -188,25 +188,7 @@ const CalendarPage = () => {
     return calls.filter((call) => !(call as { organizationId: string }).organizationId);
   }, [calls, organization]);
 
-  const saveCalls = async (updatedCalls: any[]) => {
-    setCalls;
-    if (user) {
-      try {
-        const publicMetadata: Partial<{
-          username: string;
-          firstName: string;
-          lastName: string;
-          primaryEmailAddressId: string;
-          primaryPhoneNumberId: string;
-          primaryWeb3WalletId: string;
-          calls: any[];
-        }> = { ...user.publicMetadata, calls: updatedCalls };
-        await user.update(publicMetadata);
-      } catch (error) {
-        console.error('Error updating calls:', error);
-      }
-    }
-  };
+
 
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setValues({ ...values, dateTime: start, endTime: end });
@@ -255,17 +237,6 @@ const CalendarPage = () => {
         title: 'Meeting Created',
       });
 
-      const callToAdd = {
-        id: call.id,
-        title: values.title,
-        start: new Date(startsAt),
-        end: new Date(endsAt),
-        allDay: false,
-        organizationId: organization ? organization.id : undefined,
-      };
-
-      const updatedCalls = [...calls, callToAdd];
-      await saveCalls(updatedCalls);
 
       const callLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
       window.prompt('Share this link for the scheduled call:', callLink);
