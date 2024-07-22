@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useUser, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
+import { Calendar, momentLocalizer, Views, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {
@@ -153,10 +153,10 @@ const CalendarPage = () => {
   const [calls, setCalls] = useState<CallEvent[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [values, setValues] = useState(initialValues);
-  const client = useStreamVideoClient();;
+  const client = useStreamVideoClient();
   const { toast } = useToast();
   const localizer = momentLocalizer(moment);
-  const [view, setView] = useState(Views.MONTH); // Default view is month
+  const [view, setView] = useState<'month' | 'week' | 'day'>('month'); // Default view is month
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
@@ -300,9 +300,9 @@ const CalendarPage = () => {
                 </Button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <Button onClick={() => setView(Views.MONTH)}>Month</Button>
-                <Button onClick={() => setView(Views.WEEK)}>Week</Button>
-                <Button onClick={() => setView(Views.DAY)}>Day</Button>
+                <Button onClick={() => setView('month')}>Month</Button>
+                <Button onClick={() => setView('week')}>Week</Button>
+                <Button onClick={() => setView('day')}>Day</Button>
               </div>
             </ViewButtons>
             <Calendar
