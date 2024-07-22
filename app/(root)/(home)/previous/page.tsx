@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import { useStreamVideoClient, Call } from '@stream-io/video-react-sdk';
+import { useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useGetCalls } from '@/hooks/useGetCalls';
 import Loader from '@/components/Loader';
 import ReactDatePicker from 'react-datepicker';
