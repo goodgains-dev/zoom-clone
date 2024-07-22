@@ -194,7 +194,6 @@ const CalendarPage = () => {
     return calls.filter((call) => !call.organizationId);
   }, [calls, organization]);
 
-
   const handleSelectSlot = ({ start, end }: { start: Date, end: Date }) => {
     setValues({ ...values, dateTime: start, endTime: end });
     setOpenDialog(true);
@@ -239,11 +238,10 @@ const CalendarPage = () => {
         title: 'Meeting Created',
       });
 
-
       const callLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
       window.prompt('Share this link for the scheduled call:', callLink);
 
-      const emailsArray = values.emails.split(',').map(email => email.trim());
+      const emailsArray = values.emails.split(',').map((email) => email.trim());
       await sendEmailInvite(emailsArray, callLink, description, startsAt);
 
       setOpenDialog(false);
@@ -254,17 +252,18 @@ const CalendarPage = () => {
     }
   };
 
-  const handleSelectCall = (call: { id: any; title: any; start: any; }) => {
+  const handleSelectCall = (call: { id: any; title: any; start: any }) => {
     const emails = window.prompt('Enter emails to invite to this meeting (comma separated):', '');
     if (emails) {
       const callLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
-      const emailsArray = emails.split(',').map(email => email.trim());
+      const emailsArray = emails.split(',').map((email) => email.trim());
       sendEmailInvite(emailsArray, callLink, call.title, call.start);
     }
   };
 
-  const handleNavigate = (newDate: React.SetStateAction<Date>) => {
+  const handleNavigate = (newDate: Date, newView: any) => {
     setDate(newDate);
+    setView(newView as 'month' | 'week' | 'day');
   };
 
   if (!client || !user) return <Loader />;
@@ -291,11 +290,11 @@ const CalendarPage = () => {
           <CalendarContainer>
             <ViewButtons>
               <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <Button onClick={() => handleNavigate(new Date())}>Today</Button>
-                <Button onClick={() => handleNavigate(moment(date).subtract(1, 'month').toDate())}>
+                <Button onClick={() => handleNavigate(new Date(), view)}>Today</Button>
+                <Button onClick={() => handleNavigate(moment(date).subtract(1, 'month').toDate(), view)}>
                   Back
                 </Button>
-                <Button onClick={() => handleNavigate(moment(date).add(1, 'month').toDate())}>
+                <Button onClick={() => handleNavigate(moment(date).add(1, 'month').toDate(), view)}>
                   Next
                 </Button>
               </div>
@@ -316,8 +315,8 @@ const CalendarPage = () => {
               views={{ month: true, week: true, day: true }}
               view={view}
               date={date}
-              onNavigate={handleNavigate}
-              onView={setView}
+              onNavigate={(newDate: Date) => handleNavigate(newDate, view)}
+              onView={(newView: string) => setView(newView as 'month' | 'week' | 'day')}
               step={60}
               showMultiDayTimes
               defaultDate={new Date()}
