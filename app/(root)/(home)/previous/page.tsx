@@ -321,7 +321,6 @@ const CalendarPage = () => {
               showMultiDayTimes
               defaultDate={new Date()}
               popup
-              resizable
               style={{ height: 'calc(75vh - 160px)', borderRadius: '8px' }} /* Adjusted height */
             />
           </CalendarContainer>
