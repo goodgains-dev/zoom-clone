@@ -12,8 +12,8 @@ export const sidebarLinks = [
   },
   {
     imgURL: '/icons/previous.svg',
-    route: '/previous',
-    label: 'Previous',
+    route: '/Calendar',
+    label: 'Calendar',
   },
   {
     imgURL: '/icons/Video.svg',
