@@ -219,7 +219,6 @@ const CalendarPage = () => {
       if (!call) throw new Error('Failed to create meeting');
 
       const startsAt = values.dateTime.toISOString();
-      const endsAt = values.endTime.toISOString();
       const description = values.description || 'Scheduled Meeting';
 
       await call.getOrCreate({
