@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useUser, UserButton, OrganizationSwitcher, useOrganization } from '@clerk/nextjs';
-import { Calendar, momentLocalizer, Views, View } from 'react-big-calendar';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import {
