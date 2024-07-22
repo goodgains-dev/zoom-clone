@@ -12,7 +12,7 @@ export const sidebarLinks = [
   },
   {
     imgURL: '/icons/previous.svg',
-    route: '/Calendar',
+    route: '/previous',
     label: 'Calendar',
   },
   {
