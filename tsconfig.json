@@ -21,6 +21,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/custom-elements.d.ts",  "src/custom.d.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/custom-elements.d.ts",  "src/custom.d.ts", "components/send-email.js"],
   "exclude": ["node_modules"]
 }
