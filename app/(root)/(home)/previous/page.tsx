@@ -26,6 +26,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useToast } from '@/components/ui/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { v4 as uuidv4 } from 'uuid';
+import formData from 'form-data';
+import Mailgun from 'mailgun.js';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -121,30 +123,8 @@ const initialValues = {
   emails: '',
 };
 
-const sendEmailInvite = async (emails: string[], callLink: string, description: string, dateTime: string) => {
-  try {
-    const response = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        emails,
-        callLink,
-        description,
-        dateTime,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to send email invite');
-    }
-
-    console.log('Email invite sent successfully');
-  } catch (error) {
-    console.error('Error sending email invite:', error);
-  }
-};
+const MAILGUN_API_KEY = 'a2d5e917e43002ca2eb44c3df2677024-afce6020-dc29916c';
+const MAILGUN_DOMAIN = 'goodgainswork.com';
 
 const CalendarPage = () => {
   const { user } = useUser();
@@ -204,6 +184,33 @@ const CalendarPage = () => {
     setValues(initialValues);
   };
 
+  const sendEmailInvite = async (emails: string[], callLink: string, description: string, dateTime: string) => {
+    const mailgun = new Mailgun(formData);
+    const mg = mailgun.client({ username: 'api', key: MAILGUN_API_KEY });
+
+    try {
+      const response = await mg.messages.create(MAILGUN_DOMAIN, {
+        from: `Excited User <mailgun@${MAILGUN_DOMAIN}>`,
+        to: emails,
+        subject: 'Meeting Invitation',
+        text: `You are invited to a meeting. Details:\n\nTitle: ${description}\nDate: ${dateTime}\nLink: ${callLink}`,
+        html: `<h1>You are invited to a meeting.</h1><p>Details:</p><p>Title: ${description}</p><p>Date: ${dateTime}</p><p>Link: <a href="${callLink}">${callLink}</a></p>`,
+      });
+
+      console.log('Mailgun response:', response);
+      toast({
+        title: 'Email sent successfully',
+        description: 'Your meeting invitation email has been sent.'
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: 'Error sending email',
+        description: 'There was an error sending your meeting invitation email.'
+      });
+    }
+  };
+
   const createMeeting = async () => {
     if (!client || !user) {
       console.error('Stream Video Client or user is not initialized.');
@@ -238,10 +245,12 @@ const CalendarPage = () => {
         title: 'Meeting Created',
       });
 
-      const callLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
+      const callLink = `http://localhost:3000/meeting/${call.id}`; // Replace with your actual base URL if different
+      console.log('Meeting link:', callLink);
       window.prompt('Share this link for the scheduled call:', callLink);
 
       const emailsArray = values.emails.split(',').map((email) => email.trim());
+      console.log('Sending email to:', emailsArray);
       await sendEmailInvite(emailsArray, callLink, description, startsAt);
 
       setOpenDialog(false);
@@ -255,9 +264,9 @@ const CalendarPage = () => {
   const handleSelectCall = (call: { id: any; title: any; start: any }) => {
     const emails = window.prompt('Enter emails to invite to this meeting (comma separated):', '');
     if (emails) {
-      const callLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${call.id}`;
+      const callLink = `http://localhost:3000/meeting/${call.id}`; // Replace with your actual base URL if different
       const emailsArray = emails.split(',').map((email) => email.trim());
-      sendEmailInvite(emailsArray, callLink, call.title, call.start);
+      sendEmailInvite(emailsArray, callLink, call.title, call.start.toString());
     }
   };
 
@@ -347,6 +356,14 @@ const CalendarPage = () => {
                   setValues({ ...values, dateTime: updatedDate });
                 }}
               />
+              <StyledButton
+                onClick={() => {
+                  const scheduleLink = `http://localhost:3000/schedule?host=${user?.emailAddresses}&date=${values.dateTime.toISOString()}`; // Replace with your actual base URL if different
+                  window.prompt('Share this link for scheduling:', scheduleLink);
+                }}
+              >
+                Get Scheduling Link
+              </StyledButton>
             </MiniCalendarContainer>
           </div>
         </CalendarWrapper>
@@ -360,7 +377,7 @@ const CalendarPage = () => {
                 position: 'absolute',
                 right: 8,
                 top: 8,
-                color: (theme) => theme.palette.grey[500],
+                color: (theme: { palette: { grey: any[]; }; }) => theme.palette.grey[500],
               }}
             >
               <CloseIcon />
