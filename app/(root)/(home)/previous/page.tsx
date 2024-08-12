@@ -245,7 +245,7 @@ const CalendarPage = () => {
         title: 'Meeting Created',
       });
 
-      const callLink = `http://localhost:3000/meeting/${call.id}`; // Replace with your actual base URL if different
+      const callLink = `http://goodgainswork.com/meeting/${call.id}`; // Replace with your actual base URL if different
       console.log('Meeting link:', callLink);
       window.prompt('Share this link for the scheduled call:', callLink);
 
@@ -264,7 +264,7 @@ const CalendarPage = () => {
   const handleSelectCall = (call: { id: any; title: any; start: any }) => {
     const emails = window.prompt('Enter emails to invite to this meeting (comma separated):', '');
     if (emails) {
-      const callLink = `http://localhost:3000/meeting/${call.id}`; // Replace with your actual base URL if different
+      const callLink = `http://goodgainswork.com/meeting/${call.id}`; // Replace with your actual base URL if different
       const emailsArray = emails.split(',').map((email) => email.trim());
       sendEmailInvite(emailsArray, callLink, call.title, call.start.toString());
     }
@@ -358,7 +358,7 @@ const CalendarPage = () => {
               />
               <StyledButton
                 onClick={() => {
-                  const scheduleLink = `http://localhost:3000/schedule?host=${user?.emailAddresses}&date=${values.dateTime.toISOString()}`; // Replace with your actual base URL if different
+                  const scheduleLink = `http://goodgainswork.com/schedule?host=${user?.emailAddresses}&date=${values.dateTime.toISOString()}`; // Replace with your actual base URL if different
                   window.prompt('Share this link for scheduling:', scheduleLink);
                 }}
               >
@@ -435,4 +435,3 @@ const CalendarPage = () => {
 };
 
 export default CalendarPage;
-
