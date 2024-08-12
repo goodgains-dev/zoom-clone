@@ -373,12 +373,6 @@ const CalendarPage = () => {
             <IconButton
               aria-label="close"
               onClick={handleDialogClose}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-                color: (theme: { palette: { grey: any[]; }; }) => theme.palette.grey[500],
-              }}
             >
               <CloseIcon />
             </IconButton>
@@ -441,3 +435,4 @@ const CalendarPage = () => {
 };
 
 export default CalendarPage;
+
