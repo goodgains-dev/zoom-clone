@@ -58,14 +58,12 @@ const SchedulePage = () => {
       toast({
         title: 'Email sent successfully',
         description: 'Your meeting invitation email has been sent.',
-        status: 'success',
       });
     } catch (error) {
       console.error('Error sending email:', error);
       toast({
         title: 'Error sending email',
         description: 'There was an error sending your meeting invitation email.',
-        status: 'error',
       });
     }
   };
@@ -127,3 +125,4 @@ const SchedulePage = () => {
 };
 
 export default SchedulePage;
+
