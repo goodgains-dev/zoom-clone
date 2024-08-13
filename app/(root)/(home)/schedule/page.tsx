@@ -24,7 +24,7 @@ const initialValues = {
   description: '',
 };
 
-const MAILGUN_API_KEY = 'a2d5e917e43002ca2eb44c3df2677024-afce6020-dc29916c';
+const MAILGUN_API_KEY = '';
 const MAILGUN_DOMAIN = 'goodgainswork.com';
 
 const SchedulePage = () => {
