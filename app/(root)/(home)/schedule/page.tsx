@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
 import formData from 'form-data';
 import Mailgun from 'mailgun.js';
 import { useToast } from '@/components/ui/use-toast';
@@ -30,7 +29,6 @@ const MAILGUN_DOMAIN = 'goodgainswork.com';
 
 const SchedulePage = () => {
   const searchParams = useSearchParams();
-  const host = searchParams.get('host');
   const date = searchParams.get('date');
   const { user } = useUser();
   const { toast } = useToast();
