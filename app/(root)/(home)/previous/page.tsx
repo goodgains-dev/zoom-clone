@@ -123,8 +123,6 @@ const initialValues = {
   emails: '',
 };
 
-const MAILGUN_API_KEY = '';
-const MAILGUN_DOMAIN = 'goodgainswork.com';
 
 const CalendarPage = () => {
   const { user } = useUser();
@@ -186,7 +184,7 @@ const CalendarPage = () => {
 
   const sendEmailInvite = async (emails: string[], callLink: string, description: string, dateTime: string) => {
     const mailgun = new Mailgun(formData);
-    const mg = mailgun.client({ username: 'api', key: MAILGUN_API_KEY });
+    const mg = mailgun.client({ });
 
     try {
       const response = await mg.messages.create(MAILGUN_DOMAIN, {
