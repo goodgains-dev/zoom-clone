@@ -1,85 +1,72 @@
+/* Import Tailwind CSS base, components, and utilities */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@import '@liveblocks/react-ui/styles.css';
+@import '@liveblocks/react-lexical/styles.css';
+
+@import '../styles/dark-theme.css';
+
+/* Import Skeleton CSS */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css');
+
+/* Apply the font variable */
+body {
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Additional styling for Skeleton UI components */
+h1, h2, h3, h4, h5, h6, p {
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Global Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ======== stream css overrides ======== */
-.str-video__call-stats {
-  max-width: 500px;
-  position: relative;
+/* Font Family Options */
+.font-roboto {
+  font-family: 'Roboto', sans-serif;
 }
 
-.str-video__speaker-layout__wrapper {
-  max-height: 700px;
+.font-open-sans {
+  font-family: 'Open Sans', sans-serif;
 }
 
-.str-video__participant-details {
-  color: white;
+.font-lato {
+  font-family: 'Lato', sans-serif;
 }
 
-.str-video__menu-container {
-  color: white;
+/* Adaptive font styling based on theme */
+.font-theme-default {
+  font-family: 'Roboto', sans-serif;
 }
 
-.str-video__notification {
-  color: white;
+.font-theme-cyberpunk {
+  font-family: 'Press Start 2P', cursive;
 }
 
-.str-video__participant-list {
-  background-color: #1c1f2e;
-  padding: 10px;
-  border-radius: 10px;
-  color: white;
-  height: 100%;
+.font-theme-modern {
+  font-family: 'Montserrat', sans-serif;
 }
 
-.str-video__call-controls__button {
-  height: 40px;
+.font-theme-cartoon {
+  font-family: 'Comic Sans MS', sans-serif;
 }
 
-.glassmorphism {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-.glassmorphism2 {
-  background: rgba(18, 17, 17, 0.25);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.font-theme-fun {
+  font-family: 'Pacifico', cursive;
 }
 
-/* ==== clerk class override ===== */
-
-.cl-userButtonPopoverActionButtonIcon {
-  color: white;
+.font-theme-work {
+  font-family: 'Arial', sans-serif;
 }
 
-.cl-logoBox {
-  height: 40px;
-}
-.cl-dividerLine {
-  background: #252a41;
-  height: 2px;
-}
-
-.cl-socialButtonsIconButton {
-  border: 3px solid #565761;
-}
-
-.cl-internal-wkkub3 {
-  color: white;
-}
-.cl-userButtonPopoverActionButton {
-  color: white;
-}
-
-/* =============================== */
-
+/* Tailwind utility layer */
 @layer utilities {
   .flex-center {
     @apply flex justify-center items-center;
@@ -90,8 +77,33 @@
   }
 }
 
-/* animation */
+/* Stream CSS overrides */
+.str-video__call-stats {
+  max-width: 500px;
+  position: relative;
+}
 
+/* Glassmorphism effects */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.glassmorphism2 {
+  background: rgba(18, 17, 17, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Clerk class overrides */
+.cl-userButtonPopoverActionButtonIcon,
+.cl-internal-wkkub3,
+.cl-userButtonPopoverActionButton {
+  color: white;
+}
+
+/* Animation */
 .show-block {
   width: 100%;
   max-width: 350px;
@@ -104,7 +116,6 @@
     animation-timing-function: ease-in;
     width: 0%;
   }
-
   100% {
     animation-timing-function: ease-in;
     width: 100%;
